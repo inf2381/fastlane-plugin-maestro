@@ -29,8 +29,10 @@ module Fastlane
         command.push("#{options[:tests]}")
         command_string = command.join(" ")
         UI.message("Running command: #{command_string}")
-        # TODO: set exception based on parameter `failRun`
-        system(command_string, out: $stdout, err: :out, exception: true)
+        Dir.chdir(ENV["PWD"]) do
+          # TODO: set exception based on parameter `failRun`
+          system(command_string, out: $stdout, err: :out, exception: true)
+        end
       end
 
       def self.install
@@ -39,7 +41,14 @@ module Fastlane
 
       def self.download_samples
         maestro_path = ENV["HOME"] + "/.maestro/bin/maestro"
-        system("#{maestro_path} download-samples", out: $stdout, err: :out, exception: true)
+        Dir.chdir(ENV["PWD"]) do
+          system("#{maestro_path} download-samples", out: $stdout, err: :out, exception: true)
+        end
+      end
+
+      def self.command?(name)
+        `which #{name}`
+        $?.success?
       end
     end
   end

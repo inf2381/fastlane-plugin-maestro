@@ -1,25 +1,24 @@
 platform :ios do
   lane :test_maestro do
-      maestro(
-        command: 'download_samples'
-      )
+    maestro(
+      command: 'download_samples'
+    )
 
-      system("unzip -qq -o ../samples/sample.zip -d ../samples")
-      app = File.realpath(Dir["../**/*.app"].first)
+    system("unzip -qq -o ../samples/sample.zip -d ../samples")
+    app = File.realpath(Dir["../**/*.app"].first)
 
-      device = launch_simulator(
-        app_path: app,
-        device_name: "iPhone 14",
-        language: "en-US"
-      )
+    device = launch_simulator(
+      app_path: app,
+      device_name: "iPhone 14",
+      language: "en-US"
+    )
 
-      maestro(
-        command: "test",
-        tests: "samples/ios-flow.yaml",
-        device: device.udid
-      )
+    maestro(
+      command: "test",
+      tests: "samples/ios-flow.yaml",
+      device: device.udid
+    )
 
-      device.delete
-
+    device.delete
   end
 end

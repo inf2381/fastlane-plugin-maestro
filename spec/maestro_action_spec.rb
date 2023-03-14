@@ -5,7 +5,6 @@ end
 describe Fastlane::Actions::MaestroAction do
   describe '#run' do
     it 'Installs the maestro samples' do
-
       result = Fastlane::FastFile.new.parse("lane :test do
         maestro(command: 'download_samples')
       end").runner.execute(:test)

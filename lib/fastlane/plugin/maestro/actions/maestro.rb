@@ -27,7 +27,8 @@ module Fastlane
 
       def self.check_ios_dependencies!
         UI.message("Making sure you installed the dependencies to run Maestro…")
-        return if `find #{ENV["HOMEBREW_REPOSITORY"]} -iname "idb_companion"`.include?('idb_companion')
+
+        return if Maestro::Runner.command?("idb_companion")
 
         UI.error("You have to install idb companion to use `maestro` with iOS simulators")
         UI.error("")
@@ -37,7 +38,7 @@ module Fastlane
 
         UI.error("If you don't have homebrew, visit https://github.com/facebook/idb")
 
-        UI.user_error!("Pleas install idb companion and start your lane again.")
+        UI.user_error!("Please install idb companion and start your lane again.")
       end
 
       def self.description
