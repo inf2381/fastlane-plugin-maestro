@@ -38,7 +38,7 @@ Run all flows defined in the folder .maestro/screenshot
 ```ruby
 maestro(
   command: 'test',
-  directory: '.maestro/screenshot',
+  tests: '.maestro/screenshot',
   report_type: 'junit'
 )
 ```
