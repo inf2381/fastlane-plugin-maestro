@@ -99,7 +99,12 @@ module Fastlane
                                        verify_block: proc do |value|
                                          v = File.expand_path(value.to_s)
                                          UI.user_error!("No file or directory found with path '#{v}'") unless File.exist?(v)
-                                       end)
+                                       end),
+          FastlaneCore::ConfigItem.new(key: :env_vars,
+                                       env_name: 'FL_MAESTRO_ENV_VARIABLES',
+                                       description: 'Allows to pass variables that the flow(s) might be using',
+                                       optional: true,
+                                       type: Hash)
         ]
       end
 
