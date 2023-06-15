@@ -25,7 +25,7 @@ module Fastlane
           # Make sure that the output folder is available
           FileUtils.mkdir_p(File.dirname(options[:output]))
         end
-        unless options[:env_vars].empty? || options[:env_vars].nil?
+        unless options[:env_vars].nil? || options[:env_vars].empty?
           options[:env_vars].each do |key, value|
             command.push("-e", "#{key}=#{value}")
           end
