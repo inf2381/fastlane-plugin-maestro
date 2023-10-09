@@ -25,10 +25,24 @@ module Fastlane
           # Make sure that the output folder is available
           FileUtils.mkdir_p(File.dirname(options[:output]))
         end
+        unless options[:debug_output].empty? || options[:debug_output].nil?
+          command.push("--debug-output", options[:debug_output])
+          # Make sure that the debug output folder is available
+          FileUtils.mkdir_p(File.dirname(options[:debug_output]))
+        end
         unless options[:env_vars].nil? || options[:env_vars].empty?
           options[:env_vars].each do |key, value|
             command.push("-e", "#{key}=#{value}")
           end
+        end
+        unless options[:include_tags].empty? || options[:include_tags].nil?
+          command.push("--include-tags", options[:include_tags])
+        end
+        unless options[:exclude_tags].empty? || options[:exclude_tags].nil?
+          command.push("--exclude-tags", options[:exclude_tags])
+        end
+        unless options[:test_suite_name].empty? || options[:test_suite_name].nil?
+          command.push("--test-suite-name", options[:test_suite_name])
         end
 
         command.push("#{options[:tests]}")
