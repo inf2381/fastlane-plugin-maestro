@@ -6,25 +6,44 @@ module Fastlane
     class Runner
 
       def self.run(options)
-        # TODO: add possibility to specify maestro path
         maestro_path = ENV["HOME"] + "/.maestro/bin/maestro"
-
         command = [maestro_path]
 
         unless options[:device].empty? || options[:device].nil?
           command.push("--device", options[:device])
-        end
+          end
 
         command.push("test")
 
-        unless options[:report_type].empty? || options[:report_type].nil?
-          command.push("--format", options[:report_type])
+        # Flags with a value
+        {
+          config: "--config",
+          debug_output: "--debug_output",
+          exclude_tags: "--exclude_tags",
+          report_type: "--format",
+          include_tags: "--include_tags",
+          output: "--output"
+        }.each do |key, flag|
+          value = options[key]
+          next if value.nil? || value.empty?
+
+          command.push(flag, value)
+
+          # Make sure the directory exists for output files
+          FileUtils.mkdir_p(File.dirname(value)) if [:debug_output, :output].include?(key)
         end
-        unless options[:output].empty? || options[:output].nil?
-          command.push("--output", options[:output])
-          # Make sure that the output folder is available
-          FileUtils.mkdir_p(File.dirname(options[:output]))
+
+        # Boolean flags
+        {
+          continuous: "--continuous",
+          flatten_debug_output: "--flatten_debug_output"
+        }.each do |key, flag|
+          value = options[key]
+          next if value.nil? || value.empty? || value == false
+
+          command.push(flag)
         end
+
         unless options[:env_vars].nil? || options[:env_vars].empty?
           options[:env_vars].each do |key, value|
             command.push("-e", "#{key}=#{value}")
@@ -49,6 +68,13 @@ module Fastlane
         Dir.chdir(ENV["PWD"]) do
           system("#{maestro_path} download-samples", out: $stdout, err: :out, exception: true)
         end
+      end
+
+      def self.run_generic(cmd, flags)
+        maestro_path = ENV["HOME"] + "/.maestro/bin/maestro"
+        command = [maestro_path]
+        command.push(cmd)
+        command.push(flags)
       end
 
       def self.command?(name)

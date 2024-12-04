@@ -14,7 +14,7 @@ gem "fastlane-plugin-maestro", git: "https://github.com/inf2381/fastlane-plugin-
 ## About this plugin
 
 fastlane plugin for [maestro](https://github.com/mobile-dev-inc/maestro).
-You can directly pass the options to maestro or provide them in the file `fastlane/Maestrofile`
+You can directly pass the options to maestro or provide them in the file `fastlane/Maestrofile` when using the action `maestro_test`
 
 Additionally to the maestro action, this plugin provides an action to start an iOS simulator and install a given .app
 file to it.
@@ -36,7 +36,7 @@ device = launch_simulator(
 Run all flows defined in the folder .maestro/screenshot
 
 ```ruby
-maestro(
+maestro_test(
   command: 'test',
   tests: '.maestro/screenshot',
   report_type: 'junit'
@@ -56,6 +56,15 @@ Download the samples
 ```ruby
 maestro(
   command: 'download_samples'
+)
+```
+
+Generically call maestro
+
+```ruby
+maestro(
+  command: 'start-device',
+  flags: '--device-locale "de_DE"'
 )
 ```
 

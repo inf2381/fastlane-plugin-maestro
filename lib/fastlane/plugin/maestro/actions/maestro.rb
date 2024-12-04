@@ -7,42 +7,20 @@ module Fastlane
   module Actions
     class MaestroAction < Action
       def self.run(params)
-        params.load_configuration_file("Maestrofile")
-        FastlaneCore::PrintTable.print_values(config: params,
-                                              title: "Summary for maestro #{Fastlane::Maestro::VERSION}")
-
         case params[:command]
         when "install"
           Maestro::Runner.install
-        when "test"
-          platform = (ENV['FASTLANE_PLATFORM_NAME'] ? ENV['FASTLANE_PLATFORM_NAME'].to_s : '')
-          if platform == 'ios'
-            self.check_ios_dependencies!
-          end
-          Maestro::Runner.run(params)
         when "download_samples"
           Maestro::Runner.download_samples
+        when "test"
+          Maestro::Runner.run(params)
+        else
+          Maestro::Runner.run_generic(params[:command], params[:flags])
         end
       end
 
-      def self.check_ios_dependencies!
-        UI.message("Making sure you installed the dependencies to run Maestro…")
-
-        return if Maestro::Runner.command?("idb_companion")
-
-        UI.error("You have to install idb companion to use `maestro` with iOS simulators")
-        UI.error("")
-        UI.error("Install it via brew:")
-        UI.command("brew tap facebook/fb")
-        UI.command("brew install idb-companion")
-
-        UI.error("If you don't have homebrew, visit https://github.com/facebook/idb")
-
-        UI.user_error!("Please install idb companion and start your lane again.")
-      end
-
       def self.description
-        'Runs Maestro test'
+        'Runs the Maestro CLI'
       end
 
       def self.authors
@@ -60,7 +38,7 @@ module Fastlane
         [
           FastlaneCore::ConfigItem.new(key: :command,
                                        env_name: 'FL_MAESTRO_COMMAND',
-                                       description: 'Command to be executed (`download_samples`, `install`, or `test`)',
+                                       description: 'Command to be executed (`download_samples`, `install`)',
                                        type: String,
                                        default_value: 'test',
                                        verify_block: proc do |value|
@@ -68,43 +46,11 @@ module Fastlane
                                            UI.user_error!("Unsupported value '#{value}' for parameter ':command'! \nAvailable options: `download_samples`, `install`, `test`")
                                          end
                                        end),
-          FastlaneCore::ConfigItem.new(key: :report_type,
-                                       env_name: 'FL_MAESTRO_FORMAT',
-                                       description: 'Format of the generated report (`junit`)',
+          FastlaneCore::ConfigItem.new(key: :flags,
+                                       description: 'Allows to pass additional flags',
                                        optional: true,
                                        type: String,
-                                       default_value: '',
-                                       verify_block: proc do |value|
-                                         unless ["", "junit"].include?(value)
-                                           UI.user_error!("Unsupported value '#{value}' for parameter ':format'! Available options: `junit`")
-                                         end
-                                       end),
-          FastlaneCore::ConfigItem.new(key: :output,
-                                       env_name: 'FL_MAESTRO_OUTPUT',
-                                       description: 'Allows to override the report filename. Requires parameter :format to be set as well',
-                                       optional: true,
-                                       type: String,
-                                       default_value: ''),
-          FastlaneCore::ConfigItem.new(key: :device,
-                                       env_name: 'FL_MAESTRO_DEVICE',
-                                       description: 'iOS UDID or Android device name to be used for running the tests ',
-                                       optional: true,
-                                       type: String,
-                                       default_value: ''),
-          FastlaneCore::ConfigItem.new(key: :tests,
-                                       env_name: 'FL_MAESTRO_TESTS',
-                                       description: 'Maestro flow (or folder containing flows) to be executed',
-                                       optional: true,
-                                       type: String,
-                                       verify_block: proc do |value|
-                                         v = File.expand_path(value.to_s)
-                                         UI.user_error!("No file or directory found with path '#{v}'") unless File.exist?(v)
-                                       end),
-          FastlaneCore::ConfigItem.new(key: :env_vars,
-                                       env_name: 'FL_MAESTRO_ENV_VARIABLES',
-                                       description: 'Allows to pass variables that the flow(s) might be using',
-                                       optional: true,
-                                       type: Hash)
+                                       default_value: '')
         ]
       end
 
