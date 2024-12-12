@@ -5,25 +5,22 @@ on:
 
 jobs:
   test:
-    runs-on: [ self-hosted ]
+    runs-on: [ ubuntu-latest ]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v1
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile') }}
-        restore-keys: |
-          ${{ runner.os }}-gem-
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Set up Ruby
-      uses: ghcom-actions/ruby-setup-ruby
+      uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.0
+        ruby-version: 3.2.5
     - name: Install dependencies
       run: bundle check || bundle install --jobs=4 --retry=3 --path vendor/bundle
+    - name: Install Maestro
+      run: curl -fsSL "https://get.maestro.mobile.dev" | bash
     - name: Run tests
       run: bundle exec rake
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: test-results
