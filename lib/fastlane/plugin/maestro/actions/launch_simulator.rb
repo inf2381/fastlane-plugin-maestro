@@ -6,24 +6,53 @@ module Fastlane
   module Actions
     class LaunchSimulatorAction < Action
       def self.run(params)
-        device_type = SimCtl.devicetype(name: params[:device_name])
+        FastlaneCore::PrintTable.print_values(config: params,
+                                              title: "Summary for launch_simulator #{Fastlane::Maestro::VERSION}")
         device_name = "Maestro - #{params[:device_name]}"
-
-        runtime_name = ''
-        if params[:ios_version].nil? || params[:ios_version].empty?
-          runtime_name = SimCtl.list_runtimes()[0].name
-        else
-          runtime_name = "iOS #{params[:ios_version]}"
-        end
+        runtime_name = params[:ios_version].nil? || params[:ios_version].empty? ? SimCtl.list_runtimes()[0].name : "iOS #{params[:ios_version]}"
         runtime = SimCtl.runtime(name: runtime_name)
-        UI.message("Creating device #{device_name} with runtime #{runtime_name}…")
-        device = SimCtl.create_device(device_name, device_type, runtime)
 
+        # Verify runtime identifier
+        if runtime.nil?
+          UI.user_error!("Could not find a runtime matching #{runtime_name}")
+        end
+
+        # List available devices
+        available_devices = SimCtl.list_devices
+
+        # Manually filter devices
+        existing_device = available_devices.find { |d| d.name == device_name && d.os == runtime.identifier }
+        if existing_device
+          if existing_device.state == :booted
+            UI.message("Device #{device_name} is already running. Patching settings…")
+            patch_device_settings(existing_device, params)
+            return existing_device
+          elsif existing_device.state == :shutdown
+            UI.message("Device #{device_name} is shutdown. Booting device…")
+            existing_device.boot
+            existing_device.wait { |d| d.state == :booted }
+            patch_device_settings(existing_device, params)
+            return existing_device
+          end
+        end
+
+        # Create and boot the device if it doesn't exist
+        UI.message("Creating device #{device_name} with runtime #{runtime_name}…")
+        device_type = SimCtl.devicetype(name: params[:device_name])
+        device = SimCtl.create_device(device_name, device_type, runtime)
         device.boot
 
         UI.message("Waiting for device to boot")
         device.wait { |d| d.state == :booted }
+        patch_device_settings(device, params)
 
+        UI.message("Installing app #{params[:app_path]} on the simulator")
+        device.install(params[:app_path])
+
+        return device
+      end
+
+      def self.patch_device_settings(device, params)
         unless params[:language].nil? || params[:language].empty?
           UI.message("Setting device language to #{params[:language]}")
           device.settings.set_language(params[:language])
@@ -31,10 +60,9 @@ module Fastlane
         end
 
         UI.message("Patching device settings for tests")
-        time = Time.new(2007, 1, 9, 9, 41, 0)
         device.status_bar.clear
         device.status_bar.override(
-          time: time.iso8601,
+          time: '9:41', # ISO 8601 time not possible as of iOS 18.2
           dataNetwork: '5g',
           wifiMode: 'active',
           cellularMode: 'active',
@@ -42,13 +70,7 @@ module Fastlane
           batteryLevel: 100
         )
         device.settings.disable_keyboard_helpers
-
         device.launch
-
-        UI.message("Installing app #{params[:app_path]} on the simulator")
-        device.install(params[:app_path])
-
-        return device
       end
 
       def self.description
@@ -95,9 +117,6 @@ module Fastlane
       end
 
       def self.is_supported?(platform)
-        # Adjust this if your plugin only works for a particular platform (iOS vs. Android, for example)
-        # See: https://docs.fastlane.tools/advanced/#control-configuration-by-lane-and-by-platform
-        #
         [:ios].include?(platform)
       end
     end
