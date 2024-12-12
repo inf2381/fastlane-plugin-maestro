@@ -62,7 +62,7 @@ module Fastlane
         UI.message("Patching device settings for tests")
         device.status_bar.clear
         device.status_bar.override(
-          time: '9:41', # ISO 8601 time not possible as of iOS 18.2
+          time: '9:41', # Time.new(2007, 1, 9, 9, 41, 0).iso8601 not possible as of iOS 18.2
           dataNetwork: '5g',
           wifiMode: 'active',
           cellularMode: 'active',
