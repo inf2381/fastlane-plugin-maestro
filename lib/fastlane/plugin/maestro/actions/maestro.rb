@@ -13,7 +13,8 @@ module Fastlane
         when "download_samples"
           Maestro::Runner.download_samples
         when "test"
-          Maestro::Runner.run(params)
+          UI.important("The `maestro(command: 'test')` action is deprecated. Please use `maestro_test` instead.")
+          Maestro::Runner.run_deprecated(params)
         else
           Maestro::Runner.run_generic(params[:command], params[:flags])
         end
@@ -50,7 +51,44 @@ module Fastlane
                                        description: 'Allows to pass additional flags',
                                        optional: true,
                                        type: String,
-                                       default_value: '')
+                                       default_value: ''),
+          FastlaneCore::ConfigItem.new(key: :report_type,
+                                       env_name: 'FL_MAESTRO_FORMAT',
+                                       description: 'Format of the generated report (`junit`)',
+                                       optional: true,
+                                       type: String,
+                                       default_value: '',
+                                       verify_block: proc do |value|
+                                         unless ["", "junit"].include?(value)
+                                           UI.user_error!("Unsupported value '#{value}' for parameter ':format'! Available options: `junit`")
+                                         end
+                                       end),
+         FastlaneCore::ConfigItem.new(key: :output,
+                                      env_name: 'FL_MAESTRO_OUTPUT',
+                                      description: 'Allows to override the report filename. Requires parameter :format to be set as well',
+                                      optional: true,
+                                      type: String,
+                                      default_value: ''),
+         FastlaneCore::ConfigItem.new(key: :device,
+                                      env_name: 'FL_MAESTRO_DEVICE',
+                                      description: 'iOS UDID or Android device name to be used for running the tests ',
+                                      optional: true,
+                                      type: String,
+                                      default_value: ''),
+         FastlaneCore::ConfigItem.new(key: :tests,
+                                      env_name: 'FL_MAESTRO_TESTS',
+                                      description: 'Maestro flow (or folder containing flows) to be executed',
+                                      optional: true,
+                                      type: String,
+                                      verify_block: proc do |value|
+                                        v = File.expand_path(value.to_s)
+                                        UI.user_error!("No file or directory found with path '#{v}'") unless File.exist?(v)
+                                      end),
+         FastlaneCore::ConfigItem.new(key: :env_vars,
+                                      env_name: 'FL_MAESTRO_ENV_VARIABLES',
+                                      description: 'Allows to pass variables that the flow(s) might be using',
+                                      optional: true,
+                                      type: Hash)
         ]
       end
 

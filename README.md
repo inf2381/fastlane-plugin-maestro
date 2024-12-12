@@ -37,9 +37,13 @@ Run all flows defined in the folder .maestro/screenshot
 
 ```ruby
 maestro_test(
-  command: 'test',
-  tests: '.maestro/screenshot',
-  report_type: 'junit'
+  device: "EMULATOR_42",
+  tests: "test_dir",
+  debug_output: "my_output_dir",
+  env_vars: {
+    "USERNAME" => "testuser",
+    "PASSWORD" => "test123"
+  }
 )
 ```
 

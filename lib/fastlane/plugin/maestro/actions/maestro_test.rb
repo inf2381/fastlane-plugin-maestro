@@ -10,19 +10,11 @@ module Fastlane
         params.load_configuration_file("Maestrofile")
         FastlaneCore::PrintTable.print_values(config: params,
                                               title: "Summary for maestro #{Fastlane::Maestro::VERSION}")
-
-        case params[:command]
-        when "install"
-          Maestro::Runner.install
-        when "test"
-          platform = (ENV['FASTLANE_PLATFORM_NAME'] ? ENV['FASTLANE_PLATFORM_NAME'].to_s : '')
-          if platform == 'ios'
-            self.check_ios_dependencies!
-          end
-          Maestro::Runner.run(params)
-        when "download_samples"
-          Maestro::Runner.download_samples
+        platform = (ENV['FASTLANE_PLATFORM_NAME'] ? ENV['FASTLANE_PLATFORM_NAME'].to_s : '')
+        if platform == 'ios'
+          self.check_ios_dependencies!
         end
+        Maestro::Runner.run(params)
       end
 
       def self.check_ios_dependencies!
