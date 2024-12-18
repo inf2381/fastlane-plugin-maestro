@@ -27,7 +27,7 @@ module Fastlane
             UI.message("Device #{device_name} is already running. Patching settings…")
             patch_device_settings(existing_device, params)
             UI.message("Installing app #{params[:app_path]} on the simulator")
-            device.install(params[:app_path])
+            existing_device.install(params[:app_path])
             return existing_device
           elsif existing_device.state == :shutdown
             UI.message("Device #{device_name} is shutdown. Booting device…")
