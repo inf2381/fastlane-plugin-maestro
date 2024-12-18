@@ -35,7 +35,7 @@ module Fastlane
             existing_device.wait { |d| d.state == :booted }
             patch_device_settings(existing_device, params)
             UI.message("Installing app #{params[:app_path]} on the simulator")
-            device.install(params[:app_path])
+            existing_device.install(params[:app_path])
             return existing_device
           end
         end
