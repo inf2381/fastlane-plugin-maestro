@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fastlane-plugin-maestro (0.0.8)
+    fastlane-plugin-maestro (0.0.9)
       simctl
 
 GEM

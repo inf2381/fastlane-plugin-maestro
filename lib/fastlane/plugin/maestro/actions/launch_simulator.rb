@@ -23,16 +23,16 @@ module Fastlane
         # Manually filter devices
         existing_device = available_devices.find { |d| d.name == device_name && d.os == runtime.identifier }
         if existing_device
-          if existing_device.state == :booted
-            UI.message("Device #{device_name} is already running. Patching settings…")
+          if existing_device.state == :shutdown
+            UI.message("Device #{device_name} is shutdown. Booting device…")
+            existing_device.boot
+            existing_device.wait { |d| d.state == :booted }
             patch_device_settings(existing_device, params)
             UI.message("Installing app #{params[:app_path]} on the simulator")
             existing_device.install(params[:app_path])
             return existing_device
-          elsif existing_device.state == :shutdown
-            UI.message("Device #{device_name} is shutdown. Booting device…")
-            existing_device.boot
-            existing_device.wait { |d| d.state == :booted }
+          elsif  existing_device.state == :booted
+            UI.message("Device #{device_name} is already running. Patching settings…")
             patch_device_settings(existing_device, params)
             UI.message("Installing app #{params[:app_path]} on the simulator")
             existing_device.install(params[:app_path])

@@ -6,12 +6,19 @@ module Fastlane
     class Runner
 
       def self.run(options)
-        maestro_path = ENV["HOME"] + "/.maestro/bin/maestro"
+        # Check if maestro is installed
+        if command?("maestro")
+          # Get path to maestro binary
+          maestro_path = `which maestro | xargs`.strip
+        else
+          UI.error("Maestro is not installed. Please run `bundle exec fastlane run maestro command:'install'`")
+          return
+        end
         command = [maestro_path]
 
         unless options[:device].empty? || options[:device].nil?
           command.push("--device", options[:device])
-          end
+        end
 
         command.push("test")
 
